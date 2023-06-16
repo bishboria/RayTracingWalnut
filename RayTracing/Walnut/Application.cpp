@@ -11,6 +11,8 @@
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+
+#include <vulkan/vulkan_metal.h>
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
 
@@ -28,6 +30,7 @@ extern bool g_ApplicationRunning;
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
+//#define _DEBUG
 //#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
@@ -81,10 +84,20 @@ static void SetupVulkan(const char** extensions, uint32_t extensions_count)
 
 	// Create Vulkan Instance
 	{
+        std::vector<const char*> extNames;
+        extNames.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+        extNames.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
+        extNames.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        extNames.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+        
 		VkInstanceCreateInfo create_info = {};
+        create_info.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 		create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		create_info.enabledExtensionCount = extensions_count;
-		create_info.ppEnabledExtensionNames = extensions;
+		//create_info.enabledExtensionCount = extensions_count;
+		//create_info.ppEnabledExtensionNames = extensions;
+        create_info.enabledExtensionCount = static_cast<uint32_t>(extNames.size());
+        create_info.ppEnabledExtensionNames = extNames.data();
+        
 #ifdef IMGUI_VULKAN_DEBUG_REPORT
 		// Enabling validation layers
 		const char* layers[] = { "VK_LAYER_KHRONOS_validation" };
